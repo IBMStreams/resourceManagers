@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+//
+// *******************************************************************************
+// * Copyright (C)2014, International Business Machines Corporation and *
+// * others. All Rights Reserved. *
+// *******************************************************************************
+// 
+-->
+
+<configuration>
+<streams>
+    <yarn>
+        <id/>
+        <!--	application master settings -->
+        <am>
+            <port>8082</port>
+            <cpu>2</cpu>
+            <mem>2048</mem>            
+            <heartbeat>5000</heartbeat>
+        </am>
+        <!--	resouce requirements for streams service containers 	-->
+        <resources>
+	        <nsr>
+	            <num>1</num>
+	            <cpu>1</cpu>
+	            <mem>1024</mem>
+	            <priority>0</priority>
+	        </nsr>
+	        <srm>
+	            <num>1</num>
+	            <cpu>1</cpu>
+	            <mem>1024</mem>
+	            <priority>0</priority>
+	        </srm>
+	        <sam>
+	            <num>1</num>
+	            <cpu>1</cpu>
+	            <mem>2048</mem>
+	            <priority>0</priority>
+	        </sam>
+	        <sch>
+	            <num>1</num>
+	            <cpu>1</cpu>
+	            <mem>1024</mem>
+	            <priority>0</priority>
+	        </sch>
+	        <aas>
+	            <num>1</num>
+	            <cpu>1</cpu>
+	            <mem>1024</mem>
+	            <priority>0</priority>
+	        </aas>
+	        <sws>
+	            <num>1</num>
+	            <cpu>1</cpu>
+	            <mem>4096</mem>
+	            <priority>0</priority>
+	        </sws>
+	        <hc>
+	            <num>1</num>
+	            <cpu>1</cpu>
+	            <mem>1024</mem>
+	            <priority>0</priority>
+	        </hc>
+	    </resources>
+        <instance>
+        	<!--	timeout is millis for streams operations 	-->
+        	<timeout>300</timeout>
+        </instance>
+    </yarn>
+</streams>
+</configuration>
