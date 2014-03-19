@@ -15,8 +15,7 @@ This package allows the management of IBM InfoSphere Streams instances using the
 2. InfoSphere Streams: 3.2
 3. Apache Maven: >=  3.0
 4. Python: >= 2.6
-5. com.ibm.streams.instancemanager package: >= 1.0.0
-   (IBM Streams Exchange - Under Streams Tools)
+5. [com.ibm.streams.instancemanager package:](https://www.ibm.com/developerworks/community/files/app/file/40d4ce74-f0b6-4e41-81b1-81e1b3517c09) >= 1.0.0
 
 
 ## Assumptions
