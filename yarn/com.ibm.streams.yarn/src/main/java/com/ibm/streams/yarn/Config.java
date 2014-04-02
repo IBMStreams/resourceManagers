@@ -81,12 +81,20 @@ public class Config {
 		this(PATH_CONFIG);
 	}
 	
-	public String getString(String key) {
-		return config.getString(key);
+	public String getString(String key) throws ConfigurationException {
+		if(config.containsKey(key)) {
+			return config.getString(key);
+		} else {
+			throw new ConfigurationException("Key " + key +  " not found");
+		}
 	}
 	
-	public int getInt(String key) {
-		return config.getInt(key);
+	public int getInt(String key) throws ConfigurationException {
+		if(config.containsKey(key)) {
+			return config.getInt(key);
+		} else {
+			throw new ConfigurationException("Key " + key +  " not found");
+		}
 	}
 	
 	/** Updates a property and also saves it into the configuration file

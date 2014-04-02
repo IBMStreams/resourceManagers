@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.hadoop.service.Service.STATE;
 import org.apache.hadoop.yarn.api.ApplicationConstants;
 import org.apache.hadoop.yarn.api.protocolrecords.AllocateResponse;
@@ -60,8 +61,10 @@ public class StreamsAM implements StreamsAMService.Iface {
 	 * @param attemptId Application attempt ID assigned by YARN
 	 * @param conf Streams-YARN configuration
 	 * @throws TTransportException
+	 * @throws ConfigurationException 
 	 */
-	public StreamsAM(ApplicationAttemptId attemptId, Config conf) throws TTransportException {
+	public StreamsAM(ApplicationAttemptId attemptId, Config conf) 
+			throws TTransportException, ConfigurationException {
 		this.attemptId = attemptId;
 		streamsConf = conf;
 		yarnConf = new YarnConfiguration();
@@ -141,8 +144,10 @@ public class StreamsAM implements StreamsAMService.Iface {
 	 * @return {@link RegisterApplicationMasterResponse}
 	 * @throws YarnException
 	 * @throws IOException
+	 * @throws ConfigurationException 
 	 */
-	public RegisterApplicationMasterResponse registerApplicationMaster() throws YarnException, IOException {
+	public RegisterApplicationMasterResponse registerApplicationMaster() 
+			throws YarnException, IOException, ConfigurationException {
 		LOG.info("Registering StreamsAM with RM");
 		String hostname = Utils.getHostName();
 		return streamsAMRM.registerApplicationMaster(hostname, streamsConf.getInt(Config.STREAMS_AM_PORT), null);

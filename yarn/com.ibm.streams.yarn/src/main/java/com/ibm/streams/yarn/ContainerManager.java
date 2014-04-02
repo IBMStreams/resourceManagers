@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.hadoop.yarn.api.protocolrecords.AllocateResponse;
 import org.apache.hadoop.yarn.api.records.AMCommand;
 import org.apache.hadoop.yarn.api.records.Container;
@@ -88,8 +89,9 @@ public class ContainerManager implements IContainerManager {
 	 * @param mem Amount of memory required
 	 * @param cpu Number of virtual CPUs
 	 * @return {@link Resource}
+	 * @throws ConfigurationException 
 	 */
-	private Resource getResource(String mem, String cpu) {
+	private Resource getResource(String mem, String cpu) throws ConfigurationException {
 		Resource res = Records.newRecord(Resource.class);
 		res.setMemory(config.getInt(mem));
 		res.setVirtualCores(config.getInt(cpu));
@@ -103,8 +105,10 @@ public class ContainerManager implements IContainerManager {
 	 * @param name Name of the service
 	 * @param hosts Hosts preference
 	 * @return {@link ContainerRequest}
+	 * @throws ConfigurationException 
 	 */
-	private ContainerRequest getResourceForService(String name, String[] hosts) {
+	private ContainerRequest getResourceForService(String name, String[] hosts) 
+			throws ConfigurationException {
 		Priority priority = Records.newRecord(Priority.class);
 		Resource res = null;
 		
@@ -158,9 +162,11 @@ public class ContainerManager implements IContainerManager {
 	 * file.
 	 * @param request {@link IContainerRequest} object representing a single
 	 * container
+	 * @throws ConfigurationException 
 	 */
 	@Override
-	public synchronized void requestContainer(IContainerRequest request) {
+	public synchronized void requestContainer(IContainerRequest request) 
+			throws ConfigurationException {
 		//		if(requestCount > 0) throw new Exception("Already waiting for some");
 		requestCount++;
 		LOG.info("Requesting new container: " + requestCount);
