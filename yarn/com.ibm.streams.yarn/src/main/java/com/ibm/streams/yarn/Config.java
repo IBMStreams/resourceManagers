@@ -1,10 +1,9 @@
+
+// *******************************************************************************
+// * Copyright (C)2014, International Business Machines Corporation and *
+// * others. All Rights Reserved. *
+// *******************************************************************************
 //
-// # Licensed Materials - Property of IBM
-// # Copyright IBM Corp. 2011, 2014
-// # US Government Users Restricted Rights - Use, duplication or
-// # disclosure restricted by GSA ADP Schedule Contract with
-// # IBM Corp.
-// 
 package com.ibm.streams.yarn;
 
 import java.io.File;
