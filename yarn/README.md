@@ -14,6 +14,7 @@ This Readme file describes how to install and configure Apache Hadoop YARN (Yet 
 Use Maven to compile the source code for the application in the InfoSphere Streams YARN package.
 
 1. Run the following command in your project directory. This command creates a tar.gz file in the target directory.
+
     `mvn package`
 2. Extract the contents of the tar.gz file into a directory of your choice, change to that directory, and run the application.
 
