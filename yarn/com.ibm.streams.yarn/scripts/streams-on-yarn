@@ -1,0 +1,185 @@
+#!/usr/bin/python
+
+#
+# *******************************************************************************
+# * Copyright (C)2014, International Business Machines Corporation and *
+# * others. All Rights Reserved. *
+# *******************************************************************************
+# 
+from os.path import dirname, realpath, expanduser, sep
+from os import system, getenv
+import sys
+import getopt;
+from smtpd import Options
+import subprocess
+import commands
+
+#true if this is part of Streams
+is_prod_switch=False
+
+class Command(object):
+
+	def __init__(self, name, descr, str):
+		self._name = name
+		self._descr = descr
+		self._str = str
+		
+
+COMMANDS = {
+	"start": Command("start", "Starts the Streams Application Master. If the --deploy option is specified,\n\tStreams will first be installed on the node before starting the services.", 
+			 "\t[--zkconnect {<host>:<port>},...]\n"
+			 + "\t[-d,--domain-id <did>]\n" 
+			 + "\t[--deploy]\n"
+			 + "\t[--properties <optional: path to App Master Properties>]"
+			 ),
+	"stop": Command("stop",  "Stops the Streams Application Master.",
+			"\t[--zkconnect {<host>:<port>},...]\n"
+			+ "\t[-d,--domain-id <did>]\n"
+			+ "\t[--force]"
+			)
+	}
+
+def print_help(msg):
+	print "Usage: streams-on-yarn command <options>"
+	print "COMMAND\tOPTIONS"
+	for command in COMMANDS:
+		print command  + "  " + COMMANDS[command]._descr
+		print COMMANDS[command]._str
+	print ""
+	sys.exit(msg)
+	
+def test_var(var, msg):
+	if(var == None):
+		print_help(msg)
+
+instance_owner = getenv("USER")
+streams_install_dir = getenv("STREAMS_INSTALL")
+yarn_home=getenv("YARN_HOME")
+user_home=getenv("HOME")
+domain_env=getenv("STREAMS_DOMAIN_ID")
+zk_env=getenv("STREAMS_ZKCONNECT")
+
+
+
+test_var(streams_install_dir, "ERROR: STREAMS_INSTALL environment variable not set")
+test_var(yarn_home, "ERROR: YARN_HOME environment variable not set")
+
+
+streams_yarn_jar = None
+am_prop_file = None
+
+if (is_prod_switch):
+	streams_yarn_jar=streams_install_dir+"/lib/com.ibm.streams.resourcemgr.yarn.jar"
+	am_prop_file=streams_install_dir+"/etc/yarn/streams-am.properties"
+else:
+	proj_path=(dirname(realpath(__file__))) + "/../"
+	streams_yarn_jar=proj_path + "/lib/streams-on-yarn-2.0.0.jar"
+	am_prop_file=proj_path+"/etc/streams-am.properties"
+
+
+if len(sys.argv) < 2:
+	print_help(0)
+
+
+options, remainder = getopt.getopt(sys.argv[2:], "d:", ["zkconnect=", "domain-id=", "domain=", "properties=", "deploy", "force"])
+
+zk=None
+domain=None
+deploy=False
+domain=domain_env
+zk=zk_env
+wasDomainSet=False
+wasZkSet=False
+force=False
+wasPropSet=False
+
+for opt, arg in options:
+	if opt == "--zkconnect":
+		zk = arg
+		wasZkSet=True
+	elif opt in ("--domain" , "-d" ,"--domain-id"):
+		domain = arg
+		wasDomainSet=True
+	elif opt == "--deploy":
+		deploy=True
+	elif opt == "--force":
+		force=True
+	elif opt == "--properties":
+		am_prop_file=arg
+		wasPropSet=True
+	else:
+		sys.exit("Invalid option: " + opt)
+	
+
+java_command = "$JAVA_HOME/bin/java -cp"
+
+streams_product_cp = ":".join([
+					streams_install_dir + "/lib/com.ibm.streams.resourcemgr.jar", 
+				  	streams_install_dir + "/lib/com.ibm.streams.resourcemgr.utils.jar",
+				  	streams_install_dir + "/system/impl/lib/com.ibm.streams.platform.jar"
+		       		])
+yarn_cp = "$(" + yarn_home + "/bin/yarn classpath)"
+
+base_cp = (streams_yarn_jar + ":" 
+	+ streams_install_dir + "/lib/" + streams_product_cp)
+
+test_var(zk, "ERROR: Zookeeper url not specified")
+test_var(domain, "ERROR: Domain name not specified")
+			
+if(sys.argv[1] == "start"):
+	test_var(yarn_cp, "ERROR: Unable to get Yarn classpath. Perhaps it has not been set in yarn configuration?")
+	streams_yarn_client_class = "com.ibm.streams.resourcemgr.yarn.StreamsAMClient"
+	command=(java_command 
+		 + " " + base_cp + ":" + yarn_cp 
+		 + " " + streams_yarn_client_class + " "
+		 + " ".join(sys.argv[1:])
+		 + " --home-dir " + user_home
+		 + " --install-path " + streams_install_dir
+		 )
+	if not wasDomainSet:
+		command = command+ " --domain-id " + domain 
+	if not wasZkSet:
+		command = command+ " --zkconnect " + zk
+	if not wasPropSet:
+		command = command+ " --properties " + am_prop_file 
+ 
+	rc = system(command)
+	if(rc != 0):
+		sys.exit("Failed")
+		
+elif(sys.argv[1] == "stop"):
+	command=( java_command 
+			+ " " + streams_product_cp 
+			+ " com.ibm.streams.resourcemgr.StopResourceServer "
+			+ " ".join(sys.argv[1:])
+			+ " --type yarn"
+		)
+	if not wasDomainSet:
+		command = command+ " -d " + domain 
+	if not wasZkSet:
+		command = command+ " --zkconnect " + zk 
+
+	rc = system(command)
+	if(rc != 0):
+		if(not force):
+			sys.exit("Failed")
+		else:
+			print "Streams App Master shutdown failed. Proceeding to a forced stop."
+	elif (not force):
+		print "Streams App Master stopped."
+		sys.exit(0)
+
+	yarn_app_cmd=yarn_home + "/bin/yarn application -list 2>/dev/null | grep \"Streams-AM\" | grep \"" + domain + "\""
+	cnt_cmd=yarn_app_cmd +  " |  wc -l"
+	cnt = commands.getoutput(cnt_cmd)
+	while (cnt != "0"):
+		command = (
+			yarn_app_cmd + 
+			+" |  head -n 1 | awk '{print $1}' | xargs " 
+			+ yarn_home + "/bin/yarn application -kill")
+		rc = system(command)
+		if(rc != 0):
+			sys.exit("Failed")
+		cnt = commands.getoutput(cnt_cmd)
+else:
+	print_help("Unknown command: " + sys.argv[1])
