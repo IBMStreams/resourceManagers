@@ -320,7 +320,7 @@ public class StreamsAppMaster extends ResourceManagerAdapter {
                     throw new ResourceManagerException("No such container: " + rd.getNativeResourceId());
                 ContainerRequestWrapper crw = allRequestsMap.get(rd.getNativeResourceId());
                 LOG.info("Cancelling Resource: " + crw);
-                crw.getAllocatedContainer().cancel();
+                crw.cancel();
             } catch (Exception e) {
                 LOG.error("Error cancelling container: " + rd.getNativeResourceId(), e);
             }
