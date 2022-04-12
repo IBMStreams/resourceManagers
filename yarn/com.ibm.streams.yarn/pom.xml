@@ -21,7 +21,7 @@
         </repository>
     </repositories>
     <properties>
-        <hadoop.version>2.6.0</hadoop.version>
+        <hadoop.version>3.2.3</hadoop.version>
         <junit.version>4.10</junit.version>
         <streams.dir>${env.STREAMS_INSTALL}</streams.dir>
     </properties>
